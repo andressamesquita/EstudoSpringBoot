@@ -7,16 +7,24 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.example.forum.modelo.Usuario;
+import com.example.forum.repository.UsuarioRepository;
 
 public class AutenticacaoViaTokenFilter extends OncePerRequestFilter {
 
-	//em classes do tipo filter nao eh possivel fazer injecao de dependencia (Autowired), então vamos criar um construtor
+	//em classes do tipo filter nao eh possivel fazer injecao de dependencia (Autowired), entao vamos criar um construtor
 	
 	private TokenService tokenService;
+	private UsuarioRepository repository;
 	
-	public AutenticacaoViaTokenFilter(TokenService tokenService) {
+	public AutenticacaoViaTokenFilter(TokenService tokenService, UsuarioRepository repository) {
 		this.tokenService = tokenService;
+		this.repository = repository;
+		
 	}
 
 	@Override
@@ -25,9 +33,22 @@ public class AutenticacaoViaTokenFilter extends OncePerRequestFilter {
 		
 		String token = recuperarToken(request);
 		boolean valido = tokenService.isTokenValido(token);
-		System.out.println(valido);
+		if (valido) {
+			autenticarCliente(token);
+			
+		}
 		
 		filterChain.doFilter(request, response);
+		
+	}
+
+	private void autenticarCliente(String token) {
+		Long idUsuario = tokenService.getIdUsuario(token);
+		Usuario usuario = repository.findById(idUsuario).get();
+		
+		UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+		
+		SecurityContextHolder.getContext().setAuthentication(authentication);
 		
 	}
 
