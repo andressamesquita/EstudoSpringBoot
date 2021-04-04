@@ -11,12 +11,21 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 public class AutenticacaoViaTokenFilter extends OncePerRequestFilter {
 
+	//em classes do tipo filter nao eh possivel fazer injecao de dependencia (Autowired), então vamos criar um construtor
+	
+	private TokenService tokenService;
+	
+	public AutenticacaoViaTokenFilter(TokenService tokenService) {
+		this.tokenService = tokenService;
+	}
+
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		
 		String token = recuperarToken(request);
-		System.out.println(token);
+		boolean valido = tokenService.isTokenValido(token);
+		System.out.println(valido);
 		
 		filterChain.doFilter(request, response);
 		
