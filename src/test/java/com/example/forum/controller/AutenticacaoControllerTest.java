@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc //usada para conseguir injetar o MockMvc na classe de teste
 @ActiveProfiles("test")
 public class AutenticacaoControllerTest {
 
